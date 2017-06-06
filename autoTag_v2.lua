@@ -3,6 +3,10 @@ require "xml"
 require "handler"
 require "tableToXML"
 
+-- Input: um arquivo NCL com ao menos uma mídia de vídeo marcada com Âncoras abstradas
+-- Output: Arquivo NCL com âncoras instanciadas com início e fim, representando aquele conceito no vídeo
+-- Como executar:
+-- lua autoTag_v2.lua arquivo.ncl
 
 
 json = require "json"
@@ -39,7 +43,7 @@ local function contains(table, val)
 end
 
 
-local function jsonLoop(jsonList,tagValue,NclBody,key) -- jsonFile.results[1].result.tag.classes,tagValue,xmlhandlerNCL.root.ncl.body,contador,key
+local function jsonLoop(jsonList,tagValue,NclBody,key) 
    
 if tagValue then
    for k, v in pairs(jsonList) do -- clearly only works for clarifai responses.
@@ -82,7 +86,7 @@ end
 function fillLinks(link,tagValue) -- NclBody.link,tagValue
   for kb, vb in pairs(link) do
     if link[kb]._attr.bindtag then
-      bindComponents = split(link[kb]._attr.bindtag, ".") -- 1 = video, 2 = sea
+      bindComponents = split(link[kb]._attr.bindtag, ".") 
       if bindComponents[2] == tagValue then
         -- copia o nó original e remove itens
         newTable = deepcopy(link[kb])
@@ -131,7 +135,7 @@ local function has_value (tab, val)
     return false
 end
 
-filename_in = "antes-main.ncl"
+filename_in = arg[1]
 f, e = io.open(filename_in, "r")
 if f then
   xmltextNCL = f:read("*a")
@@ -157,7 +161,7 @@ for key,value in pairs(xmlhandlerNCL.root.ncl.body.media) do
     videoFile = value._attr.src
     xmlhandlerNCL.root.ncl.body.media[key]._attr.tag = nil 
 
-    os.execute("./resize_curl.sh video.mp4")
+    os.execute("./resize_curl.sh ".. videoFile .."")
     os.execute("sleep 1")
 
 
